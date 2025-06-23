@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>마피아 스타일 게임</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; }
+    #chat { border: 1px solid #ccc; height: 250px; overflow-y: auto; padding: 10px; margin-bottom: 10px; }
+    #participants { margin-bottom: 10px; }
+    #message { width: 70%; }
+    #voteInput { width: 60%; }
+    .btn { padding: 5px 10px; margin-left: 5px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <h2>마피아 스타일 게임</h2>
+  
+  <div>
+    <label>닉네임: <input type="text" id="nickname" /></label>
+    <button onclick="joinGame()">입장</button>
+  </div>
+  
+  <div id="gameArea" class="hidden">
+    <div><strong>참가자 목록:</strong> <span id="participants"></span></div>
+    
+    <div id="chat"></div>
+    
+    <input type="text" id="message" placeholder="채팅 입력" />
+    <button onclick="sendMessage()">전송</button>
+    
+    <div style="margin-top:10px;">
+      <input type="text" id="voteInput" placeholder="투표할 닉네임 입력" />
+      <button onclick="vote()">투표</button>
+    </div>
+  </div>
+  
+  <hr />
+  
+  <div id="hostArea">
+    <h3>방장 영역</h3>
+    <textarea id="roleAssign" rows="4" cols="50" placeholder="닉네임:역할 (예: 철수:마피아&#10;영희:경찰&#10;민수:시민)"></textarea><br />
+    <button onclick="assignRoles()">역할 배정</button>
+    
+    <div style="margin-top:10px;">
+      <strong>투표 결과:</strong>
+      <ul id="voteResults"></ul>
+    </div>
+  </div>
+  
+  <script>
+    let participants = [];
+    let roles = {};
+    let votes = {};
+    let nickname = '';
+    let isHost = false;
+
+    function joinGame() {
+      const input = document.getElementById('nickname');
+      if (!input.value.trim()) {
+        alert('닉네임을 입력하세요.');
+        return;
+      }
+      nickname = input.value.trim();
+      if (participants.includes(nickname)) {
+        alert('이미 참가한 닉네임입니다.');
+        return;
+      }
+      participants.push(nickname);
+      updateParticipants();
+      document.getElementById('gameArea').classList.remove('hidden');
+      input.disabled = true;
+      document.querySelector('button[onclick="joinGame()"]').disabled = true;
+
+      // 방장 지정: 첫 입장자가 방장
+      if (participants.length === 1) {
+        isHost = true;
+        alert('당신은 방장입니다!');
+      }
+      if (!isHost) {
+        document.getElementById('hostArea').style.display = 'none';
+      }
+      
+      addChatMessage('시스템', `${nickname}님이 입장했습니다.`);
+    }
+
+    function updateParticipants() {
+      document.getElementById('participants').textContent = participants.join(', ');
+    }
+
+    function addChatMessage(sender, text) {
+      const chat = document.getElementById('chat');
+      const p = document.createElement('p');
+      p.innerHTML = `<strong>${sender}:</strong> ${text}`;
+      chat.appendChild(p);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function sendMessage() {
+      const msgInput = document.getElementById('message');
+      if (!msgInput.value.trim()) return;
+      addChatMessage(nickname, msgInput.value.trim());
+      msgInput.value = '';
+    }
+
+    function assignRoles() {
+      const text = document.getElementById('roleAssign').value.trim();
+      if (!text) {
+        alert('역할 배정 정보를 입력하세요.');
+        return;
+      }
+      roles = {};
+      const lines = text.split('\n');
+      for (const line of lines) {
+        const [name, role] = line.split(':').map(s => s.trim());
+        if (!participants.includes(name)) {
+          alert(`${name} 님은 참가자 명단에 없습니다.`);
+          return;
+        }
+        roles[name] = role;
+      }
+      addChatMessage('시스템', '역할이 배정되었습니다!');
+      console.log('Roles:', roles);
+    }
+
+    function vote() {
+      const target = document.getElementById('voteInput').value.trim();
+      if (!target) return alert('투표할 닉네임을 입력하세요.');
+      if (!participants.includes(target)) return alert('참가자 명단에 없는 닉네임입니다.');
+      votes[target] = (votes[target] || 0) + 1;
+      addChatMessage(nickname, `투표: ${target}`);
+      document.getElementById('voteInput').value = '';
+      updateVoteResults();
+    }
+
+    function updateVoteResults() {
+      const ul = document.getElementById('voteResults');
+      ul.innerHTML = '';
+      for (const [name, count] of Object.entries(votes)) {
+        const li = document.createElement('li');
+        li.textContent = `${name}: ${count}표`;
+        ul.appendChild(li);
+      }
+    }
+  </script>
+</body>
+</html>
