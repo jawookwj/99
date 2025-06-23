@@ -1,0 +1,73 @@
+!-- player.html --
+!DOCTYPE html
+html
+head
+  meta charset=UTF-8 
+  title참가자 화면title
+  style
+    body { font-family Arial, sans-serif; max-width 600px; margin auto; }
+    #chat { border 1px solid #ccc; height 250px; overflow-y auto; padding 10px; margin-bottom 10px; }
+    #participants { margin-bottom 10px; }
+    #message { width 70%; }
+    #voteInput { width 60%; }
+    .btn { padding 5px 10px; margin-left 5px; }
+  style
+head
+body
+  h2참가자 화면h2
+  
+  div
+    label닉네임 input type=text id=nickname label
+    button onclick=joinGame()입장button
+  div
+  
+  div id=gameArea style=displaynone;
+    divstrong참가자strong span id=participantsspandiv
+    
+    div id=chatdiv
+    
+    input type=text id=message placeholder=채팅 입력 
+    button onclick=sendMessage()전송button
+    
+    div style=margin-top10px;
+      input type=text id=voteInput placeholder=투표할 닉네임 입력 
+      button onclick=vote()투표button
+    div
+  div
+
+  script
+    let nickname = '';
+    let participants = [];
+    let chat = document.getElementById('chat');
+
+    function joinGame() {
+      nickname = document.getElementById('nickname').value.trim();
+      if (!nickname) return alert('닉네임을 입력하세요.');
+      document.getElementById('gameArea').style.display = 'block';
+      document.getElementById('nickname').disabled = true;
+      addMessage('시스템', nickname + '님이 입장했습니다.');
+    }
+
+    function addMessage(sender, msg) {
+      const p = document.createElement('p');
+      p.innerHTML = `strong${sender}strong ${msg}`;
+      chat.appendChild(p);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function sendMessage() {
+      const msg = document.getElementById('message').value.trim();
+      if (!msg) return;
+      addMessage(nickname, msg);
+      document.getElementById('message').value = '';
+    }
+
+    function vote() {
+      const target = document.getElementById('voteInput').value.trim();
+      if (!target) return alert('투표할 닉네임을 입력하세요.');
+      addMessage(nickname, `님이 ${target}에게 투표했습니다.`);
+      document.getElementById('voteInput').value = '';
+    }
+  script
+body
+html
